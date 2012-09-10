@@ -1,0 +1,53 @@
+- extends 'tasking/body.haml'
+
+- load url from future
+- load i18n
+- load compress
+
+- block main
+  %p
+    %a.btn.btn-primary{'href':"{% url 'tasking_task_create' %}"}
+      {% trans 'task create' %}
+
+  .gridster
+    %ul
+      - for task in tasks
+        %li{'id':'{{task.id}}', 'data-row':'={task.priority}', 'data-col':'1', 'data-sizex':'1', 'data-sizey':'1'}
+          .alert
+            %a.close{'href':'#', 'onclick':'remove("{% url "tasking_task_delete" task.id %}", {{ task.id }})'} x
+            = task.description
+
+  - compress js
+    %script{'type':'text/coffeescript'}
+      $ ->
+        window.id_row_data = ''
+
+        sync_id_row = () ->
+          id = this.id
+          row = $(this).attr('data-row')
+          window.id_row_data += id+'_'+row+'|'
+
+        stop = (event, ui) ->
+          $('.gs_w').each(sync_id_row)
+          id_row_data = window.id_row_data
+          callback = (response) -> console.log response
+          $.get "{% url 'tasking_task_priority_update' %}", {id_row_data}, callback, 'json'
+          window.id_row_data = ''
+
+        gridster = $('.gridster ul').gridster({
+          widget_margins: [0, 4],
+          widget_base_dimensions: [470, 40],
+          draggable:{ stop:stop }
+        }).data('gridster');
+
+       @remove = (url, id) ->
+        bootbox.confirm '{% trans "Are you sure delete?" %}', (confirmed) ->
+          if confirmed
+              callback = (response) ->
+                  if response['result'] == 'success'
+                    $('.gridster ul li#' + id).fadeOut 1000, () ->
+                       $('.gridster ul li#' + id).remove()
+                  else
+                    console.log response
+              $.get url, {}, callback, 'json'
+

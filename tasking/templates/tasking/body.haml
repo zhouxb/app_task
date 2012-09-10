@@ -1,0 +1,10 @@
+- extends 'base.haml'
+
+- block resource
+  %link{'rel':'stylesheet', 'href':'={ STATIC_URL }gridster/jquery.gridster.min.css'}
+  %script{'src':'={ STATIC_URL }gridster/jquery.gridster.min.js'}
+
+- block sidebar
+  - include 'tasking/sidebar.haml'
+
+- block main
